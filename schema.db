@@ -1,0 +1,69 @@
+-- Tabla de usuarios
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de hábitos de estudio
+CREATE TABLE IF NOT EXISTS habits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    materia TEXT NOT NULL,
+    horas REAL NOT NULL CHECK(horas > 0 AND horas <= 24),
+    fecha DATE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX IF NOT EXISTS idx_habits_user_id ON habits(user_id);
+CREATE INDEX IF NOT EXISTS idx_habits_fecha ON habits(fecha);
+CREATE INDEX IF NOT EXISTS idx_habits_materia ON habits(materia);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+
+-- Trigger para actualizar updated_at en usuarios
+CREATE TRIGGER IF NOT EXISTS update_users_timestamp 
+    AFTER UPDATE ON users
+BEGIN
+    UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Trigger para actualizar updated_at en hábitos
+CREATE TRIGGER IF NOT EXISTS update_habits_timestamp 
+    AFTER UPDATE ON habits
+BEGIN
+    UPDATE habits SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Vista para estadísticas por usuario
+CREATE VIEW IF NOT EXISTS user_stats AS
+SELECT 
+    u.id as user_id,
+    u.username,
+    COUNT(h.id) as total_sessions,
+    COALESCE(SUM(h.horas), 0) as total_hours,
+    COALESCE(AVG(h.horas), 0) as avg_hours_per_session,
+    COUNT(DISTINCT h.materia) as subjects_studied,
+    MIN(h.fecha) as first_study_date,
+    MAX(h.fecha) as last_study_date
+FROM users u
+LEFT JOIN habits h ON u.id = h.user_id
+GROUP BY u.id, u.username;
+
+-- Vista para estadísticas por materia
+CREATE VIEW IF NOT EXISTS subject_stats AS
+SELECT 
+    u.username,
+    h.materia,
+    COUNT(h.id) as sessions,
+    SUM(h.horas) as total_hours,
+    AVG(h.horas) as avg_hours_per_session,
+    MIN(h.fecha) as first_study_date,
+    MAX(h.fecha) as last_study_date
+FROM users u
+JOIN habits h ON u.id = h.user_id
+GROUP BY u.username, h.materia;

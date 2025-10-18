@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyTracker - Tu Compañero de Estudio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            min-height: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .form-section, .dashboard {
+            display: none;
+        }
+
+        .form-section.active, .dashboard.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .toggle-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .habits-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .habit-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .habit-info {
+            flex: 1;
+        }
+
+        .habit-subject {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .habit-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .habit-hours {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-buttons .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .success-message {
+            background: #2ecc71;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .habit-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📚 StudyTracker</div>
+            <div class="subtitle">Organiza y mejora tus hábitos de estudio</div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-section active" id="loginForm">
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="loginUsername">Usuario</label>
+                    <input type="text" id="loginUsername" name="username" required>
+                    <div class="error-message" id="loginUsernameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            </form>
+            <div class="toggle-link">
+                <a href="#" onclick="showRegister()">¿No tienes cuenta? Regístrate aquí</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-section" id="registerForm">
+            <form id="registerFormElement">
+                <div class="form-group">
+                    <label for="registerUsername">Usuario</label>
+                    <input type="text" id="registerUsername" name="username" required>
+                    <div class="error-message" id="registerUsernameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" name="password" required>
+                    <div class="error-message" id="registerPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Contraseña</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrarse</button>
+            </form>
+            <div class="toggle-link">
+                <a href="#" onclick="showLogin()">¿Ya tienes cuenta? Inicia sesión aquí</a>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="showAddHabit()">Agregar Hábito</button>
+                <button class="btn btn-secondary" onclick="showStats()">Ver Estadísticas</button>
+                <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+            </div>
+
+            <div class="success-message" id="successMessage"></div>
+
+            <!-- Add Habit Form -->
+            <div class="form-section" id="addHabitForm">
+                <h3 style="margin-bottom: 1.5rem; color: #333;">Agregar Nuevo Hábito de Estudio</h3>
+                <form id="addHabitFormElement">
+                    <div class="form-group">
+                        <label for="materia">Materia</label>
+                        <select id="materia" name="materia" required>
+                            <option value="">Selecciona una materia</option>
+                            <option value="Matemáticas">Matemáticas</option>
+                            <option value="Ciencias">Ciencias</option>
+                            <option value="Historia">Historia</option>
+                            <option value="Literatura">Literatura</option>
+                            <option value="Idiomas">Idiomas</option>
+                            <option value="Programación">Programación</option>
+                            <option value="Arte">Arte</option>
+                            <option value="Música">Música</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        <div class="error-message" id="materiaError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="horas">Horas de Estudio</label>
+                        <input type="number" id="horas" name="horas" min="0.5" max="24" step="0.5" required>
+                        <div class="error-message" id="horasError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha</label>
+                        <input type="date" id="fecha" name="fecha" required>
+                        <div class="error-message" id="fechaError"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Agregar Hábito</button>
+                </form>
+            </div>
+
+            <!-- Statistics View -->
+            <div class="form-section" id="statsView">
+                <h3 style="margin-bottom: 1.5rem; color: #333;">Estadísticas de Estudio</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalHours">0</span>
+                        <span class="stat-label">Horas Totales</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalSessions">0</span>
+                        <span class="stat-label">Sesiones de Estudio</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="avgHours">0</span>
+                        <span class="stat-label">Promedio por Sesión</span>
+                    </div>
+                </div>
+                
+                <div class="habits-list">
+                    <h4 style="margin-bottom: 1rem; color: #333;">Historial de Estudio</h4>
+                    <div id="habitsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de base de datos local
+        let users = JSON.parse(localStorage.getItem('studyTracker_users')) || [];
+        let habits = JSON.parse(localStorage.getItem('studyTracker_habits')) || [];
+        let currentUser = localStorage.getItem('studyTracker_currentUser');
+
+        // Verificar sesión existente
+        if (currentUser) {
+            showDashboard();
+        }
+
+        // Funciones de navegación
+        function showLogin() {
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        function showRegister() {
+            document.getElementById('registerForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            showAddHabit();
+        }
+
+        function showAddHabit() {
+            document.getElementById('addHabitForm').classList.add('active');
+            document.getElementById('statsView').classList.remove('active');
+            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        }
+
+        function showStats() {
+            document.getElementById('statsView').classList.add('active');
+            document.getElementById('addHabitForm').classList.remove('active');
+            updateStats();
+            displayHabits();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('studyTracker_currentUser');
+            showLogin();
+            clearForms();
+        }
+
+        // Validaciones
+        function validateUsername(username) {
+            if (username.length < 3) return 'El usuario debe tener al menos 3 caracteres';
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'El usuario solo puede contener letras, números y guión bajo';
+            return '';
+        }
+
+        function validatePassword(password) {
+            if (password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+            if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) return 'La contraseña debe contener al menos una mayúscula, una minúscula y un número';
+            return '';
+        }
+
+        function validateHours(hours) {
+            const num = parseFloat(hours);
+            if (isNaN(num) || num <= 0) return 'Las horas deben ser un número positivo';
+            if (num > 24) return 'No puedes estudiar más de 24 horas al día';
+            return '';
+        }
+
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            field.classList.add('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function clearError(fieldId) {
+            const field = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            field.classList.remove('error');
+            errorDiv.classList.remove('show');
+        }
+
+        function clearForms() {
+            document.querySelectorAll('form').forEach(form => form.reset());
+            document.querySelectorAll('.error-message').forEach(error => error.classList.remove('show'));
+            document.querySelectorAll('input, select').forEach(field => field.classList.remove('error'));
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            setTimeout(() => {
+                successDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // Eventos de formularios
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            let hasErrors = false;
+            
+            // Limpiar errores previos
+            clearError('loginUsername');
+            clearError('loginPassword');
+            
+            // Validar campos
+            if (!username) {
+                showError('loginUsername', 'El usuario es requerido');
+                hasErrors = true;
+            }
+            
+            if (!password) {
+                showError('loginPassword', 'La contraseña es requerida');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) return;
+            
+            // Verificar credenciales
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = username;
+                localStorage.setItem('studyTracker_currentUser', currentUser);
+                showDashboard();
+                clearForms();
+            } else {
+                showError('loginPassword', 'Usuario o contraseña incorrecta');
+            }
+        });
+
+        document.getElementById('registerFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            let hasErrors = false;
+            
+            // Limpiar errores previos
+            clearError('registerUsername');
+            clearError('registerPassword');
+            clearError('confirmPassword');
+            
+            // Validar usuario
+            const usernameError = validateUsername(username);
+            if (usernameError) {
+                showError('registerUsername', usernameError);
+                hasErrors = true;
+            } else if (users.find(u => u.username === username)) {
+                showError('registerUsername', 'Este usuario ya existe');
+                hasErrors = true;
+            }
+            
+            // Validar contraseña
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                showError('registerPassword', passwordError);
+                hasErrors = true;
+            }
+            
+            // Validar confirmación de contraseña
+            if (password !== confirmPassword) {
+                showError('confirmPassword', 'Las contraseñas no coinciden');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) return;
+            
+            // Registrar usuario
+            users.push({ username, password });
+            localStorage.setItem('studyTracker_users', JSON.stringify(users));
+            showSuccess('Usuario registrado exitosamente');
+            setTimeout(() => {
+                showLogin();
+                clearForms();
+            }, 1500);
+        });
+
+        document.getElementById('addHabitFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const materia = document.getElementById('materia').value;
+            const horas = document.getElementById('horas').value;
+            const fecha = document.getElementById('fecha').value;
+            
+            let hasErrors = false;
+            
+            // Limpiar errores previos
+            clearError('materia');
+            clearError('horas');
+            clearError('fecha');
+            
+            // Validar campos
+            if (!materia) {
+                showError('materia', 'La materia es requerida');
+                hasErrors = true;
+            }
+            
+            const horasError = validateHours(horas);
+            if (horasError) {
+                showError('horas', horasError);
+                hasErrors = true;
+            }
+            
+            if (!fecha) {
+                showError('fecha', 'La fecha es requerida');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) return;
+            
+            // Agregar hábito
+            const habit = {
+                user: currentUser,
+                materia,
+                horas: parseFloat(horas),
+                fecha,
+                timestamp: new Date().toISOString()
+            };
+            
+            habits.push(habit);
+            localStorage.setItem('studyTracker_habits', JSON.stringify(habits));
+            
+            showSuccess(`Hábito agregado: ${horas}h de ${materia}`);
+            this.reset();
+            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        });
+
+        // Funciones de estadísticas
+        function updateStats() {
+            const userHabits = habits.filter(h => h.user === currentUser);
+            const totalHours = userHabits.reduce((sum, h) => sum + h.horas, 0);
+            const totalSessions = userHabits.length;
+            const avgHours = totalSessions > 0 ? (totalHours / totalSessions).toFixed(1) : 0;
+            
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            document.getElementById('totalSessions').textContent = totalSessions;
+            document.getElementById('avgHours').textContent = avgHours;
+        }
+
+        function displayHabits() {
+            const userHabits = habits
+                .filter(h => h.user === currentUser)
+                .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            const habitsList = document.getElementById('habitsList');
+            
+            if (userHabits.length === 0) {
+                habitsList.innerHTML = '<p style="text-align: center; color: #666;">No hay hábitos registrados aún.</p>';
+                return;
+            }
+            
+            habitsList.innerHTML = userHabits.map(habit => `
+                <div class="habit-item">
+                    <div class="habit-info">
+                        <div class="habit-subject">${habit.materia}</div>
+                        <div class="habit-details">${habit.fecha}</div>
+                    </div>
+                    <div class="habit-hours">${habit.horas}h</div>
+                </div>
+            `).join('');
+        }
+
+        // Limpiar errores al escribir
+        document.querySelectorAll('input, select').forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.classList.contains('error')) {
+                    clearError(this.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
